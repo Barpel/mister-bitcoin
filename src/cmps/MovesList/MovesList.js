@@ -1,4 +1,7 @@
 import React from 'react'
+import Moment from 'react-moment'
+
+import './MovesList.scss'
 
 export default props => {
     const { moves } = props
@@ -9,10 +12,23 @@ export default props => {
             {
                 <ul>
                     {
-                        moves.map(move =>
-                            <li>
-                                <h5>{move.time}</h5>
-                                <h5>{move.amount}</h5>
+                        moves.map((move, idx) =>
+                            <li key={idx}>
+                                {
+                                    props.showTo &&
+                                    <h5>To: {move.to}</h5>
+                                }
+                                <h5>
+                                    <span role="img" aria-label="time">
+                                        ⏱
+                                    </span>
+                                    &nbsp;
+                                    <Moment fromNow>{move.time}</Moment>
+                                </h5>
+                                <h5>
+                                    <span role="img" aria-label="coins">
+                                        💰
+                                    </span> {move.amount} Coins</h5>
                             </li>
 
                         )

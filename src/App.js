@@ -1,6 +1,8 @@
 import React, { Component } from 'react'
 import { BrowserRouter as Router, Route, Switch, Redirect } from 'react-router-dom'
 import './assets/scss/index.scss'
+import { inject, observer } from 'mobx-react'
+import { observable } from 'mobx';
 
 import ContactPage from './pages/ContactPage/ContactPage'
 import HomePage from './pages/HomePage/HomePage'
@@ -9,6 +11,8 @@ import ContactDetails from './pages/ContactDetails/ContactDetails'
 import ContactEdit from './pages/ContactEdit/ContactEdit'
 import SignupPage from './pages/SignupPage/SignupPage'
 import AppHeader from './cmps/AppHeader/AppHeader'
+import 'moment-timezone';
+
 
 import UserService from './service/UserService'
 
@@ -16,49 +20,35 @@ const PrivateRoute = props => {
   return props.user ? <Route {...props} /> : <Redirect to="/signup" />
 }
 
+@inject('store')
+@observer
 class App extends Component {
 
-  state = { user: UserService.getUser() }
+  // state = { user: UserService.getUser() }
+  userStore = this.props.store.userStore
+  
+  @observable
+  user = this.userStore.user
 
   componentDidMount() {
-    // const user = UserService.getUser()
-    // if (user) {
-    //   this.setState({ user })
-    // }
   }
 
-  updateStateUser(user) {
-    this.setState({ user })
-  }
 
   renderSignupCmp = (props) => {
-    return <SignupPage {...props} onSignup={this.updateStateUser.bind(this)} />
-  } 
+    return <SignupPage {...props} />
+  }
 
   render() {
-    const { user } = this.state
+    const { user } = this.userStore
+    console.log(user)
     return (
       <Router>
 
         <div className="App">
 
-          { user && 
-          <AppHeader></AppHeader>
-            /* <header className="app-header">
-            <nav>
-              <ul>
-                <NavLink exact to="/">
-                  <li>Home</li>
-                </NavLink>
-                <NavLink to="/contact">
-                  <li>Contacts</li>
-                </NavLink>
-                <NavLink to="/chart">
-                  <li>Charts</li>
-                </NavLink>
-              </ul>
-            </nav>
-          </header> */}
+          {user &&
+            <AppHeader></AppHeader>
+          }
 
           <Switch>
             <PrivateRoute path="/" exact component={HomePage} user={user} />
@@ -67,7 +57,8 @@ class App extends Component {
             <PrivateRoute path="/contact/edit" exact component={ContactEdit} user={user} />
             <PrivateRoute path="/contact/edit/:contactId" component={ContactEdit} user={user} />
             <PrivateRoute path="/contact/:contactId" component={ContactDetails} user={user} />
-            <Route path="/signup" render={this.renderSignupCmp}  />
+            
+            <Route path="/signup" render={this.renderSignupCmp} />
           </Switch>
         </div>
       </Router>

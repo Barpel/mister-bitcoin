@@ -1,20 +1,22 @@
 import React, { Component } from 'react'
-import UserService from '../../service/UserService'
 
-export default class SignupPage extends Component {
+import { inject, observer } from 'mobx-react'
+
+@inject('store')
+@observer
+class SignupPage extends Component {
     state = { user: { name: '' } }
+
+    userStore = this.props.store.userStore
 
     handleChange = (ev) => {
         this.setState({ user: { name: ev.target.value } })
     }
 
-    handleSubmit = (ev) => {
+    handleSubmit = async (ev) => {
         ev.preventDefault()
-        const user = UserService.signupUser(this.state.user.name)
-        this.props.onSignup(user)
-        const { history } = this.props
-        history.replace('/')
-
+        const user = await this.userStore.signupUser(this.state.user.name)
+        this.props.history.replace('/')
     }
     render() {
         return (
@@ -26,3 +28,5 @@ export default class SignupPage extends Component {
         )
     }
 }
+
+export default SignupPage

@@ -1,32 +1,28 @@
 import React, { Component } from 'react'
+import { inject, observer } from 'mobx-react'
 
-import UserService from '../../service/UserService'
-import BitcoinService from '../../service/BitcoinService'
+@inject('store')
+@observer
+class HomePage extends Component {
 
-
-
-export default class HomePage extends Component {
-    state = {
-        user: null
-    }
+    userStore = this.props.store.userStore
 
     async componentDidMount() {
-        const user = await UserService.getUser()
-        const userBitcoins = await BitcoinService.getBitcoinRate(user.coins)
-        user.bitCoins = userBitcoins
-        this.setState({ user })
-        // console.log(this.state.user)
+        await this.userStore.fetchUser()
+        await this.userStore.fetchBitcoinRate()
     }
 
     render() {
-        const { user } = this.state
+        const { user, bitcoinRate } = this.userStore
         return (
             user &&
             <section className="home-page-container">
                 <h1>Hi {user.name}!</h1>
                 <h2><span role="img" aria-label="emoji">💰</span> Coins: {user.coins}</h2>
-                <h2>BTC: {user.bitCoins}<span>₿</span></h2>
+                <h2>BTC: {bitcoinRate}<span>₿</span></h2>
             </section>
         )
     }
 }
+
+export default HomePage

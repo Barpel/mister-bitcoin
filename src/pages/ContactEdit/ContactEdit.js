@@ -1,9 +1,11 @@
 import React, { Component } from 'react'
-
+import { inject, observer } from 'mobx-react'
 import { Link } from 'react-router-dom'
 
-import ContactService from '../../service/ContactService'
-export default class ContactEdit extends Component {
+
+@inject('store')
+@observer
+class ContactEdit extends Component {
     state = {
         contact: {
             name: '',
@@ -12,11 +14,13 @@ export default class ContactEdit extends Component {
         }
     }
 
-    async componentDidMount() {
+    contactStore = this.props.store.contactStore
+
+    componentDidMount() {
         const { contactId } = this.props.match.params
         if (contactId) {
-            const contact = await ContactService.getContactById(contactId)
-            this.setState({ contact })
+            this.contactStore.fetchContactById(contactId)
+            this.setState({ contact: JSON.parse(JSON.stringify(this.contactStore.contact)) })
         }
     }
     handleChange = (ev) => {
@@ -28,16 +32,17 @@ export default class ContactEdit extends Component {
                 [param]: ev.target.value
             }
         })
-        // console.log(ev.target.name)
     }
+
     handleSubmit = async (ev) => {
         ev.preventDefault()
-        await ContactService.saveContact(this.state.contact)
-        const { history } = this.props
-        history.push('/contact')
+        await this.contactStore.saveContact(this.state.contact)
+        this.props.history.push('/contact')
     }
-    removeContact = () => {
-        ContactService.deleteContact(this.state.contact._id)
+
+    deleteContact = () => {
+        this.contactStore.deleteContact(this.state.contact._id)
+        this.props.history.push('/contact')
     }
 
     render() {
@@ -45,15 +50,16 @@ export default class ContactEdit extends Component {
         const contactId = this.state.contact._id
         const header = contactId ? 'Edit' : 'Add'
         const route = contactId ? `/${contactId}` : ''
+
         return (
             <form className="contact-edit" onSubmit={this.handleSubmit}>
                 <div className="contact-edit-btns">
                     <Link to={`/contact${route}`}>
-                        <button>Back</button>
+                        <button type="button">Back</button>
                     </Link>
                     {
                         contactId &&
-                        <button onClick={this.removeContact}>Delete</button>
+                        <button type="button" onClick={this.deleteContact}>Delete</button>
                     }
                 </div>
                 <h1>{header} Contact</h1>
@@ -65,3 +71,5 @@ export default class ContactEdit extends Component {
         )
     }
 }
+
+export default ContactEdit

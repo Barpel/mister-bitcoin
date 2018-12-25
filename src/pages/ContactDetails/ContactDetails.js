@@ -1,35 +1,39 @@
 import React, { Component } from 'react'
 import { Link } from 'react-router-dom'
-
-import ContactService from '../../service/ContactService'
-import UserService from '../../service/UserService'
+import { inject, observer } from 'mobx-react'
 
 import TransferFund from '../../cmps/TransferFund/TransferFund'
 import MovesList from '../../cmps/MovesList/MovesList'
 
-export default class ContactDetails extends Component {
-    state = {
-        contact: null,
-        user: UserService.getUser()
-    }
+@inject('store')
+@observer
+class ContactDetails extends Component {
+
+    contactStore = this.props.store.contactStore
+    userStore = this.props.store.userStore
 
     async componentDidMount() {
         const { contactId } = this.props.match.params
-        const contact = await ContactService.getContactById(contactId)
-        this.setState({ contact })
+        await this.contactStore.fetchContactById(contactId)
+        await this.userStore.fetchUser()
     }
 
     onTransferCoins(ev) {
         ev.preventDefault()
-        const { contact } = this.state
-        var transferAmount = ev.target.amount.value
-        var user = UserService.updateUser(contact, transferAmount)
-        this.setState({ user })
-        ev.target.amount.value = ''
+
+        const { contact } = this.contactStore
+        const { target: { amount } } = ev
+        const transferAmount = amount.value
+
+        this.userStore.updateUser(contact, transferAmount)
+        // var user = UserService.updateUser(contact, transferAmount)
+        amount.value = ''
     }
 
     render() {
-        const { contact, user } = this.state
+        const { contact } = this.contactStore
+        var { user } = this.userStore
+
         return (
             contact &&
             <section className="contact-details" >
@@ -47,8 +51,13 @@ export default class ContactDetails extends Component {
                 <h2>Phone: {contact.phone}</h2>
 
                 <TransferFund contactName={contact.name} onTransferCoins={this.onTransferCoins.bind(this)} />
-                <MovesList moves={user.moves.filter(move => contact._id === move.toId)} />
+                {
+                    user &&
+                    <MovesList moves={user.moves.filter(move => contact._id === move.toId)} />
+                }
             </section>
         )
     }
 }
+
+export default ContactDetails

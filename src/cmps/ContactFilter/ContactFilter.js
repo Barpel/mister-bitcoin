@@ -1,10 +1,8 @@
-import React, { Component } from 'react'
+import React from 'react'
+import './ContactFilter.scss'
 
-export default class ContactFilter extends Component {
-    
-    render() {
-        return (
-            <input onChange={this.props.onSetFilter} />
-        )
-    }
+export default (props) => {
+    return (
+        <input className="contact-filter" onChange={props.onSetFilter} placeholder="Search" />
+    )
 }
